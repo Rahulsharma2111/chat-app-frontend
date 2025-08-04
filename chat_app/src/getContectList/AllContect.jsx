@@ -6,42 +6,50 @@ const AllContact = () => {
   const [contacts, setContacts] = useState([
     {
       id: 1,
-      name: 'John Doe',
-      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+      name: 'Narendra Modi',
+      avatar: '/images/modi.jpeg',
       lastMessage: 'Hey, how are you doing?',
       time: '10:30 AM',
       unread: 2,
     },
     {
       id: 2,
-      name: 'Sarah Smith',
-      avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+      name: 'Donald Trump',
+      avatar: '/images/trump.jpeg',
       lastMessage: 'Meeting at 3 PM tomorrow',
       time: 'Yesterday',
       unread: 0,
     },
     {
       id: 3,
-      name: 'Mike Johnson',
-      avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+      name: 'MS Dhoni',
+      avatar: '/images/dhoni.jpeg',
       lastMessage: 'Please send me the files',
       time: 'Yesterday',
       unread: 1,
     },
     {
       id: 4,
-      name: 'Emily Wilson',
-      avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
+      name: 'Ajit Doval',
+      avatar: '/images/ajit.jpeg',
       lastMessage: 'Thanks for your help!',
       time: '2 days ago',
       unread: 0,
     },
     {
       id: 5,
-      name: 'David Brown',
-      avatar: 'https://randomuser.me/api/portraits/men/5.jpg',
+      name: 'S. Jaishankar',
+      avatar: '/images/Jaishankar.jpeg',
       lastMessage: 'Let me know when you arrive',
       time: '1 week ago',
+      unread: 2,
+    },
+     {
+      id: 6,
+      name: 'Bhajan Lal Sharma',
+      avatar: '/images/bajanLal.jpeg',
+      lastMessage: 'when you free, call me?',
+      time: '1 month ago',
       unread: 2,
     },
   ]);
@@ -311,7 +319,7 @@ const handleSendMessage = () => {
         ) : (
           <div className="no-contact-selected">
             <div className="whatsapp-icon">💬</div>
-            <h3>WhatsApp Web</h3>
+            <h3>Private chat room</h3>
             <p>Select a contact to start chatting</p>
             <div className="connection-status">
               Status: {isConnected ? 'Connected' : 'Disconnected'}
