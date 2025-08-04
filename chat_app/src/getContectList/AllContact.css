@@ -1,0 +1,434 @@
+/* AllContact.css - Optimized WhatsApp Clone */
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: #f0f2f5;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Contact List Column */
+.contact-container {
+  width: 400px; /* Fixed width for contacts */
+  min-width: 400px; /* Prevent shrinking */
+  background-color: #ffffff;
+  border-right: 1px solid #e9edef;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Contact Header */
+.contact-header {
+  padding: 18px 20px;
+  background-color: #f0f2f5;
+  border-bottom: 1px solid #e9edef;
+}
+
+.contact-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #3b4a54;
+  margin-bottom: 16px;
+}
+
+.search-bar {
+  position: relative;
+  width: 100%;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px 15px 10px 38px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #667781;
+  font-size: 16px;
+}
+
+/* Contact List */
+.contact-list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.contact-item {
+  display: flex;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-items: center;
+  min-height: 72px;
+}
+
+.contact-item:hover {
+  background-color: #f5f6f6;
+}
+
+.contact-item.active {
+  background-color: #f0f2f5;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0; /* Crucial for text truncation */
+  overflow: hidden;
+}
+
+.contact-name {
+  font-weight: 600;
+  color: #111b21;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+}
+
+.contact-last-message {
+  font-size: 14px;
+  color: #667781;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contact-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.contact-time {
+  font-size: 12px;
+  color: #667781;
+  margin-bottom: 6px;
+}
+
+.unread-count {
+  background-color: #25d366;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Message Preview Area */
+.message-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #e5ddd5;
+  background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
+  background-repeat: repeat;
+  position: relative;
+  min-width: 0;
+}
+
+.no-contact-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #667781;
+  text-align: center;
+  padding: 30px;
+}
+
+.whatsapp-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  color: #25d366;
+}
+
+.no-contact-selected h3 {
+  font-size: 32px;
+  font-weight: 300;
+  margin-bottom: 16px;
+  color: #3b4a54;
+}
+
+.no-contact-selected p {
+  font-size: 14px;
+  max-width: 450px;
+  line-height: 1.5;
+  color: #667781;
+}
+
+/* Message Header */
+.message-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f0f2f5;
+  border-bottom: 1px solid #e9edef;
+}
+
+.message-header .avatar {
+  width: 44px;
+  height: 44px;
+  margin-right: 15px;
+}
+
+.message-header .contact-name {
+  flex: 1;
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 20px;
+}
+
+.header-actions button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #54656f;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Message Content */
+.message-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-bubble {
+  max-width: 65%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  position: relative;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.message-bubble.received {
+  background-color: white;
+  align-self: flex-start;
+  border-top-left-radius: 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.message-bubble.sent {
+  background-color: #d9fdd3;
+  align-self: flex-end;
+  border-top-right-radius: 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.message-time {
+  font-size: 11px;
+  color: #667781;
+  float: right;
+  margin-left: 10px;
+  margin-top: 2px;
+}
+
+/* Message Input */
+.message-input {
+  display: flex;
+  padding: 12px 16px;
+  background-color: #f0f2f5;
+  border-top: 1px solid #e9edef;
+  align-items: center;
+}
+
+.message-input input {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  margin-right: 12px;
+}
+
+.message-input button {
+  background-color: #25d366;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.message-input button:hover {
+  background-color: #128c7e;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+  .contact-container {
+    width: 350px;
+    min-width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-container {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .message-preview {
+    display: none;
+  }
+  
+  .contact-container:not(.show-messages) + .message-preview {
+    display: flex;
+  }
+}
+
+.connection-status {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.message-content {
+  overflow-y: auto;
+  height: calc(100% - 120px);
+  padding: 10px;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 18px;
+  position: relative;
+}
+
+.message-bubble.sent {
+  background-color: #DCF8C6;
+  margin-left: auto;
+}
+
+.message-bubble.received {
+  background-color: #ECECEC;
+  margin-right: auto;
+}
+
+.message-time {
+  font-size: 10px;
+  color: #666;
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+}
+
+
+
+
+/* const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 });
+
+const users = new Map();
+
+wss.on('connection', (ws) => {
+  console.log('New client connected');
+  
+  ws.on('message', (message) => {
+    const data = JSON.parse(message);
+    
+    if (data.type === 'auth') {
+      // Handle authentication
+      users.set(data.userId, ws);
+      return;
+    }
+    
+    if (data.type === 'message') {
+      // Forward message to recipient
+      const recipient = users.get(data.receiverId);
+      if (recipient) {
+        recipient.send(JSON.stringify({
+          type: 'message',
+          senderId: data.senderId,
+          text: data.text,
+          timestamp: new Date().toISOString()
+        }));
+      }
+    }
+  });
+  
+  ws.on('close', () => {
+    console.log('Client disconnected');
+    // Remove user from map
+    for (let [userId, connection] of users.entries()) {
+      if (connection === ws) {
+        users.delete(userId);
+        break;
+      }
+    }
+  });
+});
+
+console.log('WebSocket server running on ws://localhost:8080'); */
