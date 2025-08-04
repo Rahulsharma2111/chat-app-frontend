@@ -42,7 +42,7 @@ const AllContact = () => {
       avatar: 'https://randomuser.me/api/portraits/men/5.jpg',
       lastMessage: 'Let me know when you arrive',
       time: '1 week ago',
-      unread: 0,
+      unread: 2,
     },
   ]);
 
