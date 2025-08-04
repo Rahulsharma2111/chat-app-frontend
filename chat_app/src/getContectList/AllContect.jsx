@@ -3,234 +3,171 @@ import './AllContact.css';
 import { Client } from '@stomp/stompjs';
 
 const AllContact = () => {
-  const [contacts, setContacts] = useState([
-    {
-      id: 1,
-      name: 'Narendra Modi',
-      avatar: '/images/modi.jpeg',
-      lastMessage: 'Hey, how are you doing?',
-      time: '10:30 AM',
-      unread: 2,
-    },
-    {
-      id: 2,
-      name: 'Donald Trump',
-      avatar: '/images/trump.jpeg',
-      lastMessage: 'Meeting at 3 PM tomorrow',
-      time: 'Yesterday',
-      unread: 0,
-    },
-    {
-      id: 3,
-      name: 'MS Dhoni',
-      avatar: '/images/dhoni.jpeg',
-      lastMessage: 'Please send me the files',
-      time: 'Yesterday',
-      unread: 1,
-    },
-    {
-      id: 4,
-      name: 'Ajit Doval',
-      avatar: '/images/ajit.jpeg',
-      lastMessage: 'Thanks for your help!',
-      time: '2 days ago',
-      unread: 0,
-    },
-    {
-      id: 5,
-      name: 'S. Jaishankar',
-      avatar: '/images/Jaishankar.jpeg',
-      lastMessage: 'Let me know when you arrive',
-      time: '1 week ago',
-      unread: 2,
-    },
-     {
-      id: 6,
-      name: 'Bhajan Lal Sharma',
-      avatar: '/images/bajanLal.jpeg',
-      lastMessage: 'when you free, call me?',
-      time: '1 month ago',
-      unread: 2,
-    },
-  ]);
+  const userData = JSON.parse(localStorage.getItem('userData'));
 
+  const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [messageInput, setMessageInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
-  
+
   const socketRef = useRef(null);
   const messageEndRef = useRef(null);
 
-useEffect(() => {
+  // Fetch all contacts
+  useEffect(() => {
+    const fetchContact = async () => {
+      try {
+        const url = `http://localhost:8080/contacts/${userData.user_id}`;
+        const response = await fetch(url);
+        const result = await response.json();
+        console.log("Fetched contacts:", result);
+        setContacts(result.data || []);
+      } catch (error) {
+        console.error("Error fetching contacts", error);
+      }
+    };
+    fetchContact();
+  }, [userData.id]);
+
+  // Fetch chat history
+  const fetchChats = async (senderId, receiverId) => {
+    try {
+      const url = `http://localhost:8080/chats/${senderId}/${receiverId}`;
+      const response = await fetch(url);
+      const result = await response.json();
+      console.log("Fetched chats:", result);
+      setMessages(result.data || []);
+    } catch (error) {
+      console.error("Error fetching chats", error);
+    }
+  };
+
+  // WebSocket connection
+  useEffect(() => {
     const client = new Client({
-        brokerURL: 'ws://localhost:8080/ws',
-        debug: function(str) {
-            console.log(str);
-        },
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
+      brokerURL: 'ws://localhost:8080/ws',
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
     });
 
-    client.onConnect = function(frame) {
-        console.log('Connected: ' + frame);
-        setIsConnected(true);
-        
-        // Subscribe to public messages
-        client.subscribe('/topic/messages', message => {
-            const receivedMessage = JSON.parse(message.body);
-            handleIncomingMessage(receivedMessage);
-        });
-        
-        // Subscribe to private messages
-        client.subscribe('/user/queue/messages', message => {
-            const receivedMessage = JSON.parse(message.body);
-            handleIncomingMessage(receivedMessage);
-        });
-        
-        // Register user
-        client.publish({
-            destination: '/app/chat.register',
-            body: JSON.stringify("currentUsername")
-        });
+    client.onConnect = () => {
+      console.log('Connected');
+      setIsConnected(true);
+
+      client.subscribe('/topic/messages', message => {
+        handleIncomingMessage(JSON.parse(message.body));
+      });
+
+      client.subscribe('/user/queue/messages', message => {
+        handleIncomingMessage(JSON.parse(message.body));
+      });
+
+      // Register user
+      const mobileNumber = String(userData?.mobileNumber);
+      client.publish({
+        destination: '/app/chat.register',
+        body: JSON.stringify(mobileNumber)
+      });
     };
 
-    client.onStompError = function(frame) {
-        console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
+    client.onStompError = frame => {
+      console.error('Broker error:', frame.headers['message']);
+      console.error('Details:', frame.body);
     };
 
     client.activate();
-    
-    socketRef.current = client; 
-    
-    return () => {
-        if (client) {
-            client.deactivate();
-        }
-    };
-}, []);
+    socketRef.current = client;
 
-// Update your send message function
-const handleSendMessage = () => {
+    return () => {
+      if (client) client.deactivate();
+    };
+  }, [userData]);
+
+  // Send message
+  const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedContact || !isConnected) return;
 
     const newMessage = {
-        text: messageInput,
-        senderId: "currentUserId", // Replace with actual user ID
-        receiverId: selectedContact.id,
-        timestamp: new Date().toISOString()
+      from: String(userData?.id),
+      to: String(selectedContact.contactId),
+      content: messageInput,
+      timestamp: new Date().toISOString()
     };
 
-    // For private messages
     socketRef.current.publish({
-        destination: "/app/chat.private.send",
-        body: JSON.stringify({
-            ...newMessage,
-            recipient: selectedContact.id
-        })
+      destination: "/app/chat.private.send",
+      body: JSON.stringify(newMessage)
     });
 
-    // Update UI
-    setMessages(prev => [...prev, {
-        ...newMessage,
-        isSent: true
-    }]);
-    
-    setContacts(prevContacts => 
-        prevContacts.map(contact => 
-            contact.id === selectedContact.id
-                ? { 
-                    ...contact, 
-                    lastMessage: messageInput,
-                    time: 'Just now',
-                    unread: 0
-                }
-                : contact
-        )
-    );
+    setMessages(prev => [...prev, { ...newMessage, isSent: true }]);
 
-    setMessageInput('');
-};
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const handleIncomingMessage = (message) => {
-    // Update the last message in contacts list
-    setContacts(prevContacts => 
-      prevContacts.map(contact => 
-        contact.id === message.senderId
-          ? { 
-              ...contact, 
-              lastMessage: message.text,
-              time: 'Just now',
-              unread: selectedContact?.id === message.senderId ? 0 : contact.unread + 1
-            }
+    setContacts(prevContacts =>
+      prevContacts.map(contact =>
+        contact.contactId === selectedContact.contactId
+          ? { ...contact, lastMessage: messageInput, time: 'Just now', unread: 0 }
           : contact
       )
     );
 
-    // If the message is from the currently selected contact, add it to the messages
-    if (selectedContact?.id === message.senderId) {
+    setMessageInput('');
+  };
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Handle incoming messages
+  const handleIncomingMessage = (message) => {
+    setContacts(prevContacts =>
+      prevContacts.map(contact =>
+        contact.contactId.toString() === message.from
+          ? {
+            ...contact,
+            lastMessage: message.content,
+            time: 'Just now',
+            unread: selectedContact?.contactId.toString() === message.from ? 0 : (contact.unread || 0) + 1
+          }
+          : contact
+      )
+    );
+
+    if (selectedContact?.contactId.toString() === message.from) {
       setMessages(prev => [
         ...prev,
         {
           id: Date.now(),
-          text: message.text,
-          senderId: message.senderId,
-          timestamp: new Date().toISOString(),
+          text: message.content,
+          senderId: message.from,
+          timestamp: message.timestamp,
           isSent: false
         }
       ]);
     }
   };
 
+  // When a contact is selected
   const handleContactSelect = (contact) => {
     setSelectedContact(contact);
-    
-    // Mark messages as read
-    setContacts(prevContacts => 
-      prevContacts.map(c => 
-        c.id === contact.id ? { ...c, unread: 0 } : c
+
+    setContacts(prevContacts =>
+      prevContacts.map(c =>
+        c.contactId === contact.contactId ? { ...c, unread: 0 } : c
       )
     );
-    
-    // Load conversation history (in a real app, you'd fetch this from your API)
-    setMessages([
-      {
-        id: 1,
-        text: 'Hi there!',
-        senderId: contact.id,
-        timestamp: '2023-05-01T10:30:00Z',
-        isSent: false
-      },
-      {
-        id: 2,
-        text: 'Hello! How are you?',
-        senderId: 0,
-        timestamp: '2023-05-01T10:32:00Z',
-        isSent: true
-      },
-      {
-        id: 3,
-        text: contact.lastMessage,
-        senderId: contact.id,
-        timestamp: new Date().toISOString(),
-        isSent: false
-      }
-    ]);
+
+    fetchChats(userData.id, contact.contactId);
   };
 
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredContacts = (contacts || []).filter(contact =>
+    contact.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatTime = (timestamp) => {
+    if (!timestamp) return '';
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -238,7 +175,6 @@ const handleSendMessage = () => {
   return (
     <div className="app-container">
       <div className="contact-container">
-        {/* Header */}
         <div className="contact-header">
           <h2>Chats</h2>
           <div className="connection-status">
@@ -255,36 +191,31 @@ const handleSendMessage = () => {
           </div>
         </div>
 
-        {/* Contact List */}
         <div className="contact-list">
           {filteredContacts.map((contact) => (
             <div
-              key={contact.id}
-              className={`contact-item ${selectedContact?.id === contact.id ? 'active' : ''}`}
+              key={contact.contactId}
+              className={`contact-item ${selectedContact?.contactId === contact.contactId ? 'active' : ''}`}
               onClick={() => handleContactSelect(contact)}
             >
-              <img src={contact.avatar} alt={contact.name} className="avatar" />
+              <img src={contact.avatar || '/images/default-avatar.png'} alt={contact.name} className="avatar" />
               <div className="contact-info">
                 <div className="contact-name">{contact.name}</div>
-                <div className="contact-last-message">{contact.lastMessage}</div>
+                <div className="contact-last-message">{contact.mobileNumber}</div>
               </div>
               <div className="contact-meta">
-                <div className="contact-time">{contact.time}</div>
-                {contact.unread > 0 && (
-                  <div className="unread-count">{contact.unread}</div>
-                )}
+                <div className="contact-time">{contact.updatedAt}</div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Message Preview */}
       <div className="message-preview">
         {selectedContact ? (
           <>
             <div className="message-header">
-              <img src={selectedContact.avatar} alt={selectedContact.name} className="avatar" />
+              <img src={selectedContact.avatar || '/images/default-avatar.png'} alt={selectedContact.name} className="avatar" />
               <div className="contact-name">{selectedContact.name}</div>
               <div className="header-actions">
                 <button>📞</button>
@@ -293,20 +224,20 @@ const handleSendMessage = () => {
             </div>
             <div className="message-content">
               {messages.map((message) => (
-                <div 
-                  key={message.id} 
-                  className={`message-bubble ${message.isSent ? 'sent' : 'received'}`}
+                <div
+                  key={message.id || message.messageId}
+                  className={`message-bubble ${message.sent ? 'received' : 'sent'}`}
                 >
-                  <p>{message.text}</p>
-                  <span className="message-time">{formatTime(message.timestamp)}</span>
+                  <p>{message.text || message.content}</p>
+                  <span className="message-time">{formatTime(message.timestamp || message.updatedAt)}</span>
                 </div>
               ))}
               <div ref={messageEndRef} />
             </div>
             <div className="message-input">
-              <input 
-                type="text" 
-                placeholder="Type a message..." 
+              <input
+                type="text"
+                placeholder="Type a message..."
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
